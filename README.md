@@ -15,16 +15,16 @@ Runs at http://127.0.0.1:8000 — interactive docs at /docs
 
 ## Endpoints
 
-Method	Path	Description
-GET	      /	    Get API information
-GET	 /health	    Check the API is running
-GET	/tasks	Get all tasks
-GET	/tasks/{id}	Get a task by ID
-POST	/tasks	Create a new task
-PUT	/tasks/{id}	Update a task
-DELETE	/tasks/{id}	Delete a task
-
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | / | Get API information |
+| GET | /health | Check the API is running |
+| GET | /tasks | Get all tasks |
+| GET | /tasks/{id} | Get a task by ID |
+| POST | /tasks | Create a new task |
+| PUT | /tasks/{id} | Update a task |
+| DELETE | /tasks/{id} | Delete a task |
  
-# Swagger UI
+## Swagger UI
 
 ![alt text](Swagger_1.png) ![alt text](Swagger_2.png)
