@@ -28,3 +28,7 @@ Runs at http://127.0.0.1:8000 — interactive docs at /docs
 ## Swagger UI
 
 ![alt text](Swagger_1.png) ![alt text](Swagger_2.png)
+
+
+## Example request
+![alt text](image.png)
