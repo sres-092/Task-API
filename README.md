@@ -3,6 +3,7 @@ I have built a task api which uses CRUD steps for a to do list a simple to do li
 
 ## Setup
 
+```
 git clone https://github.com/sres-092/Task-API.git
 cd task-api
 python -m venv venv
@@ -10,6 +11,7 @@ venv\Scripts\Activate.ps1 # Windows
 source venv/bin/activate # Mac/Linux
 pip install -r requirements.txt
 fastapi dev main.py
+```
 
 Runs at http://127.0.0.1:8000 — interactive docs at /docs
 
@@ -31,4 +33,15 @@ Runs at http://127.0.0.1:8000 — interactive docs at /docs
 
 
 ## Example request
-![alt text](image.png)
+
+```
+curl.exe -i -X POST http://127.0.0.1:8000/tasks -H "Content-Type: application/json" -d '{\"title\": \"Buy bread\"}'
+
+HTTP/1.1 201 Created
+date: Fri, 18 Sep 2026 08:55:09 GMT
+server: uvicorn
+content-length: 41
+content-type: application/json
+
+{"id":5,"title":"Buy bread","done":false}
+```
