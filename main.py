@@ -12,7 +12,9 @@ class TaskUpdate(BaseModel):
 app = FastAPI(title="Task API", description="A simple task management API", version="1.0.0")
 #tasks = [{"id": 1, "title": "Clg Studies", "done": True}, {"id": 2, "title": "Workout", "done": True}, {"id": 3, "title": "Grocery Shopping", "done": False}]
 def get_db():
-    return sqlite3.connect("tasks.db")
+    conn = sqlite3.connect("tasks.db")
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def init_db():
     conn = get_db()
@@ -45,14 +47,23 @@ async def health_check():
 
 @app.get("/tasks", summary="Get all tasks")
 async def get_tasks():
-    return tasks
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM tasks")
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
 
 @app.get("/tasks/{id}", summary="Get a task by ID", responses={404: {"description": "Task not found"}})
 async def get_task(id: int):
-    for task in tasks:
-       if task["id"] == id:
-          return task
-    raise HTTPException(status_code=404, detail="Task not found")
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM tasks WHERE id = ?", (id,))
+    row = cursor.fetchone()
+    conn.close()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return dict(row)
 
 @app.post("/tasks", status_code=201, summary="Create a new task", responses={400: {"description": "Task title is required"}})
 async def create_task(task: TaskCreate):
