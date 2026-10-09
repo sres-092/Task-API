@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+import sqlite3 
 
 class TaskCreate(BaseModel):
     title: str
@@ -9,8 +10,30 @@ class TaskUpdate(BaseModel):
 
 
 app = FastAPI(title="Task API", description="A simple task management API", version="1.0.0")
-tasks = [{"id": 1, "title": "Clg Studies", "done": True}, {"id": 2, "title": "Workout", "done": True}, {"id": 3, "title": "Grocery Shopping", "done": False}]
+#tasks = [{"id": 1, "title": "Clg Studies", "done": True}, {"id": 2, "title": "Workout", "done": True}, {"id": 3, "title": "Grocery Shopping", "done": False}]
+def get_db():
+    return sqlite3.connect("tasks.db")
 
+def init_db():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INTEGER PRIMARY KEY,
+            title TEXT,
+            done BOOLEAN 
+        )
+    """)
+    cursor.execute("SELECT COUNT(*) FROM tasks")
+    count = cursor.fetchone()[0]
+    if count == 0:
+        cursor.execute("INSERT INTO tasks (title, done) VALUES (?, ?)", ("Clg Studies", True))
+        cursor.execute("INSERT INTO tasks (title, done) VALUES (?, ?)", ("Workout", True))
+        cursor.execute("INSERT INTO tasks (title, done) VALUES (?, ?)", ("Grocery Shopping", False))
+    conn.commit()
+    conn.close()
+
+init_db()
 
 @app.get("/", summary="Get API information")
 async def root():
