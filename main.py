@@ -69,9 +69,13 @@ async def get_task(id: int):
 async def create_task(task: TaskCreate):
     if not task.title.strip():
         raise HTTPException(status_code=400, detail="Task title is required")
-    new_task = {"id": len(tasks) + 1, "title": task.title, "done": False}
-    tasks.append(new_task)
-    return new_task
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO tasks (title, done) VALUES (?, ?)", (task.title, False))
+    conn.commit()
+    new_id = cursor.lastrowid
+    conn.close()
+    return {"id": new_id, "title": task.title, "done": False}
 
 @app.delete("/tasks/{id}", status_code=204, summary="Delete a task", responses={404: {"description": "Task not found"}})
 async def delete_task(id: int):
