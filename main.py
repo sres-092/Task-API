@@ -79,19 +79,25 @@ async def create_task(task: TaskCreate):
 
 @app.delete("/tasks/{id}", status_code=204, summary="Delete a task", responses={404: {"description": "Task not found"}})
 async def delete_task(id: int):
-    for task in tasks :
-        if task["id"] == id:
-            tasks.remove(task)
-            return 
-    raise HTTPException(status_code=404, detail="Task not found")
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM tasks WHERE id = ?", (id,))
+    conn.commit()
+    deleted = cursor.rowcount
+    conn.close()
+    if deleted == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
 
 @app.put("/tasks/{id}", summary="Update a task", responses={400: {"description": "Task title is required"}, 404: {"description": "Task not found"}})
 async def update_task(id: int, task_update: TaskUpdate):
     if not task_update.title.strip():
         raise HTTPException(status_code=400, detail="Task title is required")
-    for task in tasks:
-        if task["id"] == id:
-            task["title"] = task_update.title
-            task["done"] = task_update.done
-            return task
-    raise HTTPException(status_code=404, detail="Task not found")
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE tasks SET title = ?, done = ? WHERE id = ?", (task_update.title, task_update.done, id))
+    conn.commit()
+    updated = cursor.rowcount
+    conn.close()
+    if updated == 0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"id": id, "title": task_update.title, "done": task_update.done}
