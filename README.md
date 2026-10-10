@@ -45,3 +45,19 @@ content-type: application/json
 
 {"id":5,"title":"Buy bread","done":false}
 ```
+
+## Why SQLite
+
+SQLite is easy to set up and understand — there’s no separate server to install or run, the whole database is a single file, and the data survives a server restart.
+
+## Where the database lives
+
+tasks.db in the project root. It is created automatically the first time the app runs, and it’s git-ignored, so every clone starts fresh and builds its own database with the three seeded tasks.
+
+## Example SQL query
+
+I ran five queries by hand in DB Browser. 'SELECT COUNT(*) FROM tasks;' returned 3. I also ran 'UPDATE tasks SET done = 1;' which affected 3 rows — and the change appeared through the API immediately, without restarting the server, because DB Browser and the API read the same file.
+
+## Database in DB Browser
+
+![alt text](db_browser.png)
