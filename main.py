@@ -60,7 +60,7 @@ async def get_tasks():
 async def get_task(id: int):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM tasks WHERE id = ?", (id,))
+    cursor.execute("SELECT * FROM tasks WHERE id = %s", (id,))
     row = cursor.fetchone()
     conn.close()
     if row is None:
@@ -73,17 +73,18 @@ async def create_task(task: TaskCreate):
         raise HTTPException(status_code=400, detail="Task title is required")
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO tasks (title, done) VALUES (?, ?)", (task.title, False))
+    cursor.execute("INSERT INTO tasks (title, done) VALUES (%s, %s) RETURNING *", (task.title, False))
     conn.commit()
-    new_id = cursor.lastrowid
+    new_task = cursor.fetchone()
+    conn.commit()
     conn.close()
-    return {"id": new_id, "title": task.title, "done": False}
+    return dict(new_task)
 
 @app.delete("/tasks/{id}", status_code=204, summary="Delete a task", responses={404: {"description": "Task not found"}})
 async def delete_task(id: int):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM tasks WHERE id = ?", (id,))
+    cursor.execute("DELETE FROM tasks WHERE id = %s", (id,))
     conn.commit()
     deleted = cursor.rowcount
     conn.close()
@@ -96,7 +97,7 @@ async def update_task(id: int, task_update: TaskUpdate):
         raise HTTPException(status_code=400, detail="Task title is required")
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("UPDATE tasks SET title = ?, done = ? WHERE id = ?", (task_update.title, task_update.done, id))
+    cursor.execute("UPDATE tasks SET title = %s, done = %s WHERE id = %s", (task_update.title, task_update.done, id))
     conn.commit()
     updated = cursor.rowcount
     conn.close()
