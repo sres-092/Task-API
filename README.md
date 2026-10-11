@@ -46,18 +46,59 @@ content-type: application/json
 {"id":5,"title":"Buy bread","done":false}
 ```
 
-## Why SQLite
+## Running it
 
-SQLite is easy to set up and understand — there’s no separate server to install or run, the whole database is a single file, and the data survives a server restart.
+You need Docker Desktop installed. Nothing else — no Python, no Postgres.
 
-## Where the database lives
+```
+git clone https://github.com/sres-092/Task-API.git
+cd Task-API
+copy .env.example .env
+docker compose up
+```
 
-tasks.db in the project root. It is created automatically the first time the app runs, and it’s git-ignored, so every clone starts fresh and builds its own database with the three seeded tasks.
+That starts the API and a Postgres database together. The API is at
+http://localhost:8000, docs at http://localhost:8000/docs.
 
-## Example SQL query
+The table is created automatically on first run and seeded with three
+example tasks.
 
-I ran five queries by hand in DB Browser. 'SELECT COUNT(*) FROM tasks;' returned 3. I also ran 'UPDATE tasks SET done = 1;' which affected 3 rows — and the change appeared through the API immediately, without restarting the server, because DB Browser and the API read the same file.
+## Configuration
 
-## Database in DB Browser
+The database connection string comes from a `.env` file, which is
+git-ignored so no password is ever committed. `.env.example` is
+committed with the same keys and placeholder values — copy it to
+`.env` before starting.
 
-![alt text](db_browser.png)
+When running through Docker Compose, the app reaches the database at
+the service name `db`, not `localhost`.
+
+## What changed from A2
+
+Storage moved from a SQLite file to Postgres running in a container.
+Every endpoint kept its path, its request shape, its response shape
+and its status codes — nothing a client sees changed.
+
+Being honest about the layering: my database code lives inside the
+route functions rather than in a separate repository module, so the
+swap touched more lines than it ideally would. The queries changed
+(`?` placeholders became `%s`, `INTEGER PRIMARY KEY` became `SERIAL`,
+inserts now use `RETURNING *` instead of `lastrowid`) but the logic
+around them did not. A15 formalizes pulling that into its own layer.
+
+## Persistence
+
+Data survives a full stack restart because the Postgres container
+mounts a named Docker volume.
+
+How I checked: created a task through `POST /tasks`, ran
+`docker compose down` to destroy both containers, then
+`docker compose up -d` to recreate them. `GET /tasks` still returned
+the task — the containers were new, the volume was not.
+
+## Data in the database
+
+`\dt` lists the tasks table and a `SELECT` shows the seeded rows,
+queried directly inside the Postgres container:
+
+![Tasks table in Postgres](db_screenshot.png)
